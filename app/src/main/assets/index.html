@@ -274,7 +274,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 
     <!-- K-Line Chart -->
     <div id="klineArea" style="display:none">
-      <div class="chart-wrap" style="height:360px">
+      <div class="chart-wrap" style="height:420px;margin:8px 12px;border-radius:16px">
         <div id="klineContainer" style="width:100%;height:100%"></div>
         <div class="loading-overlay" id="klineLoading"><div class="spinner"></div></div>
       </div>
@@ -283,7 +283,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
     <!-- Intraday Chart -->
     <div id="intradayArea" style="display:none">
       <div class="section-h">分时走势</div>
-      <div class="chart-wrap" style="height:240px">
+      <div class="chart-wrap" style="height:260px;margin:8px 12px;border-radius:16px">
         <div id="intradayContainer" style="width:100%;height:100%"></div>
         <div class="loading-overlay" id="intradayLoading"><div class="spinner"></div></div>
         <div class="placeholder" id="intradayPlaceholder">
@@ -500,7 +500,7 @@ async function fetchIntra(code){var u=CFG.em.iUrl+'?secid='+fsc(code)+'&fields1=
 function klineOpt(kd,txs){
   if(!kd||!kd.klines||!kd.klines.length)return null;
   var dates=[],ohlc=[],vols=[];
-  kd.klines.forEach(function(k){dates.push(k.date);ohlc.push([k.open,k.close,k.low,k.high]);vols.push({value:k.volume,itemStyle:{color:k.close>=k.open?'rgba(255,59,48,0.6)':'rgba(52,199,89,0.6)'}})});
+  kd.klines.forEach(function(k){dates.push(k.date);ohlc.push([k.open,k.close,k.low,k.high]);vols.push({value:k.volume,itemStyle:{color:k.close>=k.open?'rgba(255,59,48,0.75)':'rgba(52,199,89,0.75)'}})});
   function calcMA(d,p){var ma=[];for(var i=0;i<d.length;i++){if(i<p-1){ma.push('-');continue}var s=0;for(var j=i-p+1;j<=i;j++)s+=d[j][1];ma.push((s/p).toFixed(2))}return ma}
   var ma5=calcMA(ohlc,5),ma10=calcMA(ohlc,10);
   var diMap={};dates.forEach(function(d,i){diMap[d]=i});
@@ -515,17 +515,17 @@ function klineOpt(kd,txs){
     tooltip:{trigger:'axis',axisPointer:{type:'cross',lineStyle:{color:isDark?'#555':'#ccc'}},backgroundColor:isDark?'rgba(44,44,46,0.95)':'rgba(255,255,255,0.95)',borderColor:isDark?'#555':'#e5e5ea',textStyle:{color:isDark?'#f2f2f7':'#1c1c1e',fontSize:12},
       formatter:function(params){if(!params||!params.length)return'';var kp=null;for(var i=0;i<params.length;i++){if(params[i].seriesName==='K\u7ebf'){kp=params[i];break}}if(!kp)return'';var k=kd.klines[kp.dataIndex];if(!k)return'';var s='<b>'+k.date+'</b><br/>';s+='\u5f00\u76d8: <span style="color:'+(k.open>=k.close?'#34c759':'#ff3b30')+'">'+k.open.toFixed(2)+'</span><br/>';s+='\u6536\u76d8: <span style="color:'+(k.close>=k.open?'#ff3b30':'#34c759')+'">'+k.close.toFixed(2)+'</span><br/>';s+='\u6700\u9ad8: '+k.high.toFixed(2)+' \u6700\u4f4e: '+k.low.toFixed(2)+'<br/>';s+='\u6210\u4ea4\u91cf: '+fVol(k.volume)+'<br/>';s+='\u6da8\u8dcc\u5e45: <span style="color:'+(k.changePct>=0?'#ff3b30':'#34c759')+'">'+(k.changePct>=0?'+':'')+k.changePct.toFixed(2)+'%</span>';var dayTxs=txs.filter(function(t){return t.dateKey===k.date});if(dayTxs.length>0){s+='<hr style="border-color:'+(isDark?'#555':'#e5e5ea')+';margin:6px 0"/>';dayTxs.forEach(function(t){s+='<span style="color:'+(t.direction==='buy'?'#ff3b30':'#34c759')+'">'+(t.direction==='buy'?'\u25b2\u4e70':'\u25bc\u5356')+'</span> '+t.price.toFixed(2)+'\u00d7'+t.quantity+'\u80a1 '+(t.timeStr||'')+'<br/>'})}return s}},
     axisPointer:{link:[{xAxisIndex:[0,1]}]},
-    grid:[{left:52,right:12,top:30,height:'52%'},{left:52,right:12,top:'70%',height:'16%'}],
-    xAxis:[{type:'category',data:dates,gridIndex:0,boundaryGap:true,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{color:isDark?'#8e8e93':'#8e8e93',fontSize:10},splitLine:{show:false}},
+    grid:[{left:48,right:8,top:24,height:'55%'},{left:48,right:8,top:'68%',height:'18%'}],
+    xAxis:[{type:'category',data:dates,gridIndex:0,boundaryGap:true,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{color:isDark?'#98989d':'#6e6e73',fontSize:11},splitLine:{show:false}},
            {type:'category',data:dates,gridIndex:1,boundaryGap:true,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{show:false},splitLine:{show:false}}],
-    yAxis:[{type:'value',gridIndex:0,scale:true,min:minP,max:maxP,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{color:isDark?'#8e8e93':'#8e8e93',fontSize:10,formatter:function(v){return v.toFixed(2)}},splitLine:{lineStyle:{color:isDark?'#2c2c2e':'#f0f0f2'}}},
+    yAxis:[{type:'value',gridIndex:0,scale:true,min:minP,max:maxP,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{color:isDark?'#98989d':'#6e6e73',fontSize:11,formatter:function(v){return v.toFixed(2)}},splitLine:{lineStyle:{color:isDark?'#2c2c2e':'#e8e8ed',type:'dashed'}}},
            {type:'value',gridIndex:1,scale:true,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{color:isDark?'#8e8e93':'#8e8e93',fontSize:9,formatter:function(v){return fVol(v)}},splitLine:{show:false},splitNumber:2}],
     dataZoom:[{type:'inside',xAxisIndex:[0,1],start:Math.max(0,100-90/dates.length*100),end:100,zoomOnMouseWheel:true,moveOnMouseMove:true},
-              {type:'slider',xAxisIndex:[0,1],start:Math.max(0,100-90/dates.length*100),end:100,bottom:4,height:16,borderColor:'transparent',backgroundColor:isDark?'rgba(44,44,46,0.5)':'rgba(240,240,242,0.8)',fillerColor:'rgba(0,122,255,0.15)',handleStyle:{color:'#007aff',borderColor:'#007aff'},textStyle:{color:isDark?'#8e8e93':'#8e8e93',fontSize:9}}],
-    series:[{name:'K\u7ebf',type:'candlestick',data:ohlc,xAxisIndex:0,yAxisIndex:0,itemStyle:{color:'#ff3b30',color0:'#34c759',borderColor:'#ff3b30',borderColor0:'#34c759'},markPoint:{data:mp,animation:false}},
-            {name:'MA5',type:'line',data:ma5,xAxisIndex:0,yAxisIndex:0,smooth:true,lineStyle:{width:1,color:'#ffcc00'},symbol:'none'},
-            {name:'MA10',type:'line',data:ma10,xAxisIndex:0,yAxisIndex:0,smooth:true,lineStyle:{width:1,color:'#007aff'},symbol:'none'},
-            {name:'\u6210\u4ea4\u91cf',type:'bar',data:vols,xAxisIndex:1,yAxisIndex:1,barMaxWidth:6}]}}
+              {type:'slider',xAxisIndex:[0,1],start:Math.max(0,100-90/dates.length*100),end:100,bottom:4,height:16,borderColor:'transparent',backgroundColor:isDark?'rgba(44,44,46,0.5)':'rgba(240,240,242,0.8)',fillerColor:'rgba(0,122,255,0.2)',handleStyle:{color:'#007aff',borderColor:'#007aff'},textStyle:{color:isDark?'#8e8e93':'#8e8e93',fontSize:9}}],
+    series:[{name:'K\u7ebf',type:'candlestick',data:ohlc,xAxisIndex:0,yAxisIndex:0,itemStyle:{color:'#ff3b30',color0:'#34c759',borderColor:'#ff3b30',borderColor0:'#34c759',borderWidth:1},barWidth:'60%',barMinWidth:3,markPoint:{data:mp,animation:false}},
+            {name:'MA5',type:'line',data:ma5,xAxisIndex:0,yAxisIndex:0,smooth:true,lineStyle:{width:1.5,color:'#ffcc00'},symbol:'none'},
+            {name:'MA10',type:'line',data:ma10,xAxisIndex:0,yAxisIndex:0,smooth:true,lineStyle:{width:1.5,color:'#007aff'},symbol:'none'},
+            {name:'\u6210\u4ea4\u91cf',type:'bar',data:vols,xAxisIndex:1,yAxisIndex:1,barMaxWidth:10}]}}
 
 // Intraday Chart Option
 function intraOpt(id,tx){
@@ -547,7 +547,7 @@ function intraOpt(id,tx){
       formatter:function(params){if(!params||!params.length)return'';var s='<b>'+params[0].axisValue+'</b><br/>';var p=null;for(var i=0;i<params.length;i++){if(params[i].seriesName==='\u4ef7\u683c')p=params[i]}if(p){var diff=p.value-pc;var pct=pc?(diff/pc*100):0;var c=diff>=0?'#ff3b30':'#34c759';s+='\u4ef7\u683c: <span style="color:'+c+'">'+p.value.toFixed(2)+'</span> <span style="color:'+c+'">('+(diff>=0?'+':'')+pct.toFixed(2)+'%)</span>'}return s}},
     grid:{left:52,right:12,top:20,bottom:28},
     xAxis:{type:'category',data:times,boundaryGap:false,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{color:'#8e8e93',fontSize:9},splitLine:{show:false}},
-    yAxis:{type:'value',scale:true,min:minP,max:maxP,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{color:'#8e8e93',fontSize:9,formatter:function(v){return v.toFixed(2)}},splitLine:{lineStyle:{color:isDark?'#2c2c2e':'#f0f0f2'}}},
+    yAxis:{type:'value',scale:true,min:minP,max:maxP,axisLine:{lineStyle:{color:isDark?'#555':'#ddd'}},axisLabel:{color:'#8e8e93',fontSize:9,formatter:function(v){return v.toFixed(2)}},splitLine:{lineStyle:{color:isDark?'#2c2c2e':'#e8e8ed',type:'dashed'}}},
     series:[{name:'\u4ef7\u683c',type:'line',data:prices,smooth:true,lineStyle:{width:1.5,color:'#007aff'},symbol:'none',
       areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(0,122,255,0.2)'},{offset:1,color:'rgba(0,122,255,0.01)'}]}},
       markLine:{data:ml,symbol:'none',animation:false},markPoint:{data:mp2,animation:false}},
@@ -594,6 +594,9 @@ async function loadStock(code){
           if(date){var dayTx=null;for(var i=0;i<txs.length;i++){if(txs[i].dateKey===date){dayTx=txs[i];break}}if(dayTx)selectTx(dayTx.idx)}}})}
     D.ss.value=code;
     toast('\u5df2\u52a0\u8f7d '+(kd.name||code),'success');
+    // Update stock info header
+    D.stockInfo.style.display="block";D.siName.textContent=kd.name||code;D.siCode.textContent=code;
+    var lastK=kd.klines[kd.klines.length-1];if(lastK){D.siPrice.textContent=lastK.close.toFixed(2);var chg=lastK.changePct;D.siChange.textContent=(chg>=0?"+"+chg.toFixed(2):chg.toFixed(2))+"%";D.siPrice.style.color=chg>=0?"var(--up)":"var(--down)";D.siChange.style.color=chg>=0?"var(--up)":"var(--down)"}
   }catch(e){console.error(e);toast('\u52a0\u8f7d\u5931\u8d25: '+e.message,'error')}
   finally{ld('k',false)}}
 
@@ -658,7 +661,7 @@ function init(){
     ip:document.getElementById('intradayPlaceholder'),kl:document.getElementById('klineLoading'),
     il:document.getElementById('intradayLoading'),ts:document.getElementById('toast'),
     tt:document.getElementById('toastText'),ss:document.getElementById('stockSelect'),
-    navTitle:document.getElementById('navTitle'),navSub:document.getElementById('navSub'),
+    navTitle:document.getElementById('navTitle'),stockInfo:document.getElementById('stockInfo'),siName:document.getElementById('siName'),siCode:document.getElementById('siCode'),siPrice:document.getElementById('siPrice'),siChange:document.getElementById('siChange'),navSub:document.getElementById('navSub'),
     emptySt:document.getElementById('emptyState'),statsArea:document.getElementById('statsArea'),
     stockSel:document.getElementById('stockSelector'),klineArea:document.getElementById('klineArea'),
     intraArea:document.getElementById('intradayArea'),statR:document.getElementById('statRecords'),
