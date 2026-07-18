@@ -1,4 +1,4 @@
-﻿# 交割单可视化 - Android APK
+# 交割单可视化 - Android APK
 
 将 stock-visualizer.html 打包为 Android 原生 APK 应用。
 

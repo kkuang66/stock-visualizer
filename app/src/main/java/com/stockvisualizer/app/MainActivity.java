@@ -1,4 +1,4 @@
-﻿package com.stockvisualizer.app;
+package com.stockvisualizer.app;
 
 import android.app.Activity;
 import android.content.Intent;

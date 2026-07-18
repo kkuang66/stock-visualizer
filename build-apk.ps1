@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     自动构建交割单可视化的 Android APK
 .DESCRIPTION
