@@ -768,7 +768,7 @@ async function loadStock(code){
       S.kc.on('click',function(params){
         if(params.componentType==='markPoint'&&params.data&&params.data._tx)selectTx(params.data._tx.idx);
         else if(params.componentType==='series'&&params.seriesName==='K\u7ebf'){var date=kd.klines[params.dataIndex]?kd.klines[params.dataIndex].date:null;
-          if(date){var dayTx=null;for(var i=0;i<txs.length;i++){if(txs[i].dateKey===date){dayTx=txs[i];break}}if(dayTx)selectTx(dayTx.idx)}}})}
+          if(date){var dayTx=null;var curTxs=S.grp[S.cur]||[];for(var i=0;i<curTxs.length;i++){if(curTxs[i].dateKey===date){dayTx=curTxs[i];break}}if(dayTx)selectTx(dayTx.idx)}}})}
     D.ss.value=code;
     toast('\u5df2\u52a0\u8f7d '+(kd.name||code),'success');
     // Update stock info header
