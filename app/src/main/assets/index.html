@@ -494,7 +494,29 @@ function mapIdx(h,k){for(var j=0;j<FM[k].length;j++){var i=h.findIndex(function(
 function parseRec(rows){if(rows.length<2)return[];var h=rows[0].map(function(x){return x.trim()});var idx={};Object.keys(FM).forEach(function(k){idx[k]=mapIdx(h,k)});if(idx.date<0)idx.date=0;if(idx.code<0)idx.code=idx.date+1;if(idx.name<0)idx.name=idx.code+1;if(idx.dir<0)idx.dir=idx.name+1;if(idx.price<0)idx.price=idx.dir+1;if(idx.qty<0)idx.qty=idx.price+1;var bw=['\u4e70\u5165','\u8bc1\u5238\u4e70\u5165','B','BUY','buy'];var sw=['\u5356\u51fa','\u8bc1\u5238\u5356\u51fa','S','SELL','sell'];var recs=[];for(var r=1;r<rows.length;r++){var row=rows[r];if(!row||row.length<=idx.date)continue;var rd=(row[idx.date]||'').trim();var rc=(row[idx.code>=0?idx.code:0]||'').replace(/[^0-9]/g,'');if(!rd||!rc)continue;var rdir=idx.dir>=0?(row[idx.dir]||'').trim():'';var dir='?';if(bw.some(function(w){return rdir.indexOf(w)>=0}))dir='buy';else if(sw.some(function(w){return rdir.indexOf(w)>=0}))dir='sell';else if(rdir.indexOf('\u4e70')>=0)dir='buy';else if(rdir.indexOf('\u5356')>=0)dir='sell';var p=pNum(idx.price>=0?row[idx.price]:'');var q=pNum(idx.qty>=0?row[idx.qty]:'');if(isNaN(p)||isNaN(q)||p<=0||q<=0)continue;var rn=idx.name>=0?(row[idx.name]||'').trim():'';var rt=idx.time>=0?(row[idx.time]||'').trim():'';var d=rd.replace(/[^0-9]/g,'');var dk=d.slice(0,4)+'-'+d.slice(4,6)+'-'+d.slice(6,8);var ts='';if(rt){var td=rt.replace(/[^0-9]/g,'');if(td.length>=6)ts=td.slice(0,2)+':'+td.slice(2,4)+':'+td.slice(4,6);else if(td.length>=4)ts=td.slice(0,2)+':'+td.slice(2,4)}recs.push({dateKey:dk,timeStr:ts,code:rc,name:rn||rc,direction:dir,price:p,quantity:q,idx:r-1})}return recs}// API
 function jsonp(url,cb){return new Promise(function(ok,no){var c=cb||('_c_'+Date.now()+'_'+Math.random().toString(36).slice(2,8));var tm=setTimeout(function(){cl();no(new Error('\u8d85\u65f6'))},15000);function cl(){clearTimeout(tm);delete window[c];var s=document.getElementById('js_'+c);if(s)s.remove()}window[c]=function(d){cl();ok(d)};var s=document.createElement('script');s.id='js_'+c;s.src=url+(url.indexOf('?')>=0?'&':'?')+'cb='+c;s.onerror=function(){cl();no(new Error('\u7f51\u7edc\u8bf7\u6c42\u5931\u8d25'))};document.head.appendChild(s)})}
 async function fetchKline(code){var u=CFG.em.dUrl+'?secid='+fsc(code)+'&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt='+CFG.klKlt+'&fqt='+CFG.fqt+'&beg=0&end=20500101&lmt='+CFG.range;var d=await jsonp(u);if(!d||!d.data||!d.data.klines)throw new Error('\u65e5\u7ebf\u6570\u636e\u83b7\u53d6\u5931\u8d25');return{code:code,name:d.data.name||code,klines:d.data.klines.map(function(k){var f=k.split(',');return{date:f[0],open:+f[1],close:+f[2],high:+f[3],low:+f[4],volume:+f[5],amount:+f[6],changePct:+f[8]}})}}
-async function fetchIntra(code){var u=CFG.em.iUrl+'?secid='+fsc(code)+'&fields1=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=1';var d=await jsonp(u);if(!d||!d.data||!d.data.trends||!d.data.trends.length)throw new Error('\u5206\u65f6\u6570\u636e\u4e3a\u7a7a');return{preClose:d.data.preClose||0,trends:d.data.trends.map(function(t){var f=t.split(',');return{time:f[0],price:+f[1],avgPrice:+f[2],volume:+f[5]}})}}
+async function fetchIntra(code,dateKey){
+  // Try trends2 API first (works for today)
+  try{
+    var u=CFG.em.iUrl+'?secid='+fsc(code)+'&fields1=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=1';
+    var d=await jsonp(u);
+    if(d&&d.data&&d.data.trends&&d.data.trends.length){
+      var trends=d.data.trends.map(function(t){var f=t.split(',');return{time:f[0],price:+f[1],avgPrice:+f[2],volume:+f[5]}});
+      var today=trends[0]?trends[0].time.split(' ')[0]:'';
+      if(!dateKey||today===dateKey||today===dateKey.replace(/-/g,'')){
+        return{preClose:d.data.preClose||0,trends:trends};
+      }
+    }
+  }catch(e){}
+  
+  // Fallback: use 1-min kline API for historical dates
+  var dateNum=dateKey.replace(/-/g,'');
+  var klineUrl='https://push2his.eastmoney.com/api/qt/stock/kline/get?secid='+fsc(code)+'&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=1&fqt=1&beg='+dateNum+'&end='+dateNum+'&lmt=240';
+  var kd=await jsonp(klineUrl);
+  if(!kd||!kd.data||!kd.data.klines||!kd.data.klines.length)throw new Error('\u5206\u65f6\u6570\u636e\u4e3a\u7a7a');
+  var trends=kd.data.klines.map(function(k){var f=k.split(',');var t=f[0];var timeParts=t.split(' ');var timeLabel=timeParts.length>1?timeParts[1].slice(0,5):t;return{time:t,price:+f[1],avgPrice:+f[2],volume:+f[5]}});
+  var preClose=trends.length>0?trends[0].price:0;
+  return{preClose:preClose,trends:trends};
+}
 
 // K-Line Chart Option - Professional stock app style with B/S markers
 function klineOpt(kd,txs){
@@ -766,9 +788,9 @@ async function selectTx(idx){
   var chartTab=document.querySelector('.tab[data-page="pageChart"]');
   if(!document.getElementById('pageChart').classList.contains('active'))switchTab(chartTab);
   // Show intraday
-  D.intraArea.style.display='block';D.ip.style.display='flex';ld('i',true);
+  D.intraArea.style.display='block';D.ip.style.display='flex';ld('i',true);setTimeout(function(){D.intraArea.scrollIntoView({behavior:'smooth',block:'start'})},100);
   var ck=tx.code+'_'+tx.dateKey;
-  try{id=S.id[ck];if(!id){id=await fetchIntra(tx.code);S.id[ck]=id}
+  try{id=S.id[ck];if(!id){id=await fetchIntra(tx.code,tx.dateKey);S.id[ck]=id}
     var opt=intraOpt(id,tx);if(opt){if(!S.ic)S.ic=echarts.init(D.ic,null,{renderer:'canvas'});S.ic.setOption(opt,true);S.ic.resize();D.ip.style.display='none'}
   }catch(e){console.error(e);D.ip.innerHTML='<span class="material-icons-round" style="font-size:36px;opacity:.5">error_outline</span><p>\u5206\u65f6\u6570\u636e\u52a0\u8f7d\u5931\u8d25</p>';toast('\u5206\u65f6\u52a0\u8f7d\u5931\u8d25','error')}
   finally{ld('i',false)}}
