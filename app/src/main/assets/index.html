@@ -750,8 +750,8 @@ async function loadStock(code){
     D.ss.value=code;
     toast('\u5df2\u52a0\u8f7d '+(kd.name||code),'success');
     // Update stock info header
-    D.stockInfo.style.display="block";D.siName.textContent=kd.name||code;D.siCode.textContent=code;
-    var lastK=kd.klines[kd.klines.length-1];if(lastK){D.siPrice.textContent=lastK.close.toFixed(2);var chg=lastK.changePct;D.siChange.textContent=(chg>=0?"+"+chg.toFixed(2):chg.toFixed(2))+"%";D.siPrice.style.color=chg>=0?"var(--up)":"var(--down)";D.siChange.style.color=chg>=0?"var(--up)":"var(--down)"}
+    if(D.stockInfo)D.stockInfo.style.display="block";if(D.siName)D.siName.textContent=kd.name||code;if(D.siCode)D.siCode.textContent=code;
+    var lastK=kd.klines[kd.klines.length-1];if(lastK){if(D.siPrice)D.siPrice.textContent=lastK.close.toFixed(2);var chg=lastK.changePct;if(D.siChange)D.siChange.textContent=(chg>=0?"+"+chg.toFixed(2):chg.toFixed(2))+"%";if(D.siPrice)D.siPrice.style.color=chg>=0?"var(--up)":"var(--down)";if(D.siChange)D.siChange.style.color=chg>=0?"var(--up)":"var(--down)"}
   }catch(e){console.error(e);toast('\u52a0\u8f7d\u5931\u8d25: '+e.message,'error')}
   finally{ld('k',false)}}
 
