@@ -417,7 +417,7 @@ select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 <!-- Hidden File Input -->
 <input type="file" id="fileInput" style="display:none" accept=".csv,.CSV,.txt,.TXT" onchange="if(this.files[0])importCSV(this.files[0])">
 
-<script>var CFG={em:{dUrl:'https://push2his.eastmoney.com/api/qt/stock/kline/get',iUrl:'https://push2.eastmoney.com/api/qt/stock/trends2/get'},range:365,klKlt:101,fqt:1};
+<script>var _selecting=false;var CFG={em:{dUrl:'https://push2his.eastmoney.com/api/qt/stock/kline/get',iUrl:'https://push2.eastmoney.com/api/qt/stock/trends2/get'},range:365,klKlt:101,fqt:1};
 var D={},S={recs:[],grp:{},cur:'',kc:null,ic:null,kd:{},id:{},ari:-1,clr:{},dark:null};
 var COLORS=['#ff3b30','#007aff','#ffcc00','#34c759','#af52de','#ff9500','#5ac8fa','#ff2d55','#5856d6','#00c7be'];
 
@@ -773,7 +773,7 @@ async function loadStock(code){
       if(!S.kc){S.kc=echarts.init(D.kc,null,{renderer:'canvas'});
         window.addEventListener('resize',function(){if(S.kc)S.kc.resize();if(S.ic)S.ic.resize()})}
       S.kc.setOption(opt,true);S.kc.off('click');
-      S.kc.on('click',function(params){console.log('CLICK:',params.componentType,'series:',params.seriesName,'idx:',params.dataIndex,'cur:',S.cur);
+      S.kc.on('click',function(params){if(_selecting)return;console.log('CLICK:',params.componentType,'series:',params.seriesName,'idx:',params.dataIndex,'cur:',S.cur);
         if(params.componentType==='markPoint'){var mi=params.dataIndex;if(mi!==undefined&&S.markerTxMap&&S.markerTxMap[mi])selectTx(S.markerTxMap[mi].idx);return;}
         else if(params.componentType==='series'&&params.seriesName==='K\u7ebf'){var date=kd.klines[params.dataIndex]?kd.klines[params.dataIndex].date:null;
           if(date){var dayTx=null;var curTxs=S.grp[S.cur]||[];for(var i=0;i<curTxs.length;i++){if(curTxs[i].dateKey===date){dayTx=curTxs[i];break}}if(dayTx)selectTx(dayTx.idx)}}})}
@@ -804,6 +804,7 @@ async function selectTx(idx){
   finally{ld('i',false)}}
 
 // Import CSV
+}
 async function importCSV(file){
   try{toast('\u6b63\u5728\u89e3\u6790...','info');
     var buf=await file.arrayBuffer();var encoding=enc(buf);
